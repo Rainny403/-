@@ -1,5 +1,4 @@
 import os
-import json
 from playwright.sync_api import sync_playwright
 
 WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
@@ -10,27 +9,23 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
-    page.goto(URL, wait_until="networkidle")
+    logs = []
 
-    # 取得 Next.js state
-    next_data = page.evaluate("""
-        () => {
-            const el = document.getElementById("__NEXT_DATA__");
-            return el ? el.textContent : null;
-        }
-    """)
+    def log_response(response):
+        try:
+            if "application/json" in response.headers.get("content-type", ""):
+                logs.append(response.url)
+        except:
+            pass
+
+    page.on("response", log_response)
+
+    page.goto(URL, wait_until="networkidle")
 
     browser.close()
 
 import requests
 
-if not next_data:
-    requests.post(WEBHOOK, json={
-        "content": "❌ 沒抓到 __NEXT_DATA__（頁面不是 Next.js 或已改版）"
-    })
-else:
-    data = json.loads(next_data)
-
-    requests.post(WEBHOOK, json={
-        "content": "✅ 成功抓到 Next.js 資料\n\n" + str(list(data.keys()))
-    })
+requests.post(WEBHOOK, json={
+    "content": "🎯 偵測到 JSON endpoints：\n\n" + "\n".join(logs[:10])
+})
