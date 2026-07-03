@@ -1,4 +1,4 @@
-name: Monster Hunter Wilds Discord
+name: MH Wilds Discord
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: playwright install
+      - run: playwright install --with-deps
 
       - run: python main.py
         env:
