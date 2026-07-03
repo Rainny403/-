@@ -1,40 +1,37 @@
 import os
-import time
+import json
 from playwright.sync_api import sync_playwright
 
 WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
 
-if not WEBHOOK:
-    raise Exception("DISCORD_WEBHOOK 沒有設定")
-
 URL = "https://info.monsterhunter.com/wilds/event-quest/zh-hant/schedule"
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(
-        headless=True,
-        args=[
-            "--no-sandbox",
-            "--disable-blink-features=AutomationControlled"
-        ]
-    )
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-    context = browser.new_context(
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
-        locale="zh-TW"
-    )
+    responses = []
 
-    page = context.new_page()
+    def handle_response(response):
+        if "json" in response.headers.get("content-type", ""):
+            responses.append(response)
 
-    page.goto(URL, wait_until="networkidle", timeout=60000)
+    page.on("response", handle_response)
 
-    time.sleep(3)
-
-    html = page.content()
+    page.goto(URL, wait_until="networkidle")
 
     browser.close()
+
+# 找 JSON API
+data = []
+for r in responses:
+    try:
+        data.append(r.json())
+    except:
+        pass
 
 import requests
 
 requests.post(WEBHOOK, json={
-    "content": "成功抓到網頁（CloudFront bypass 測試）\n\n" + html[:1500]
+    "content": "抓到 JSON 數量：" + str(len(data))
 })
