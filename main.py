@@ -10,28 +10,27 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
-    responses = []
-
-    def handle_response(response):
-        if "json" in response.headers.get("content-type", ""):
-            responses.append(response)
-
-    page.on("response", handle_response)
-
     page.goto(URL, wait_until="networkidle")
+
+    # 取得 Next.js state
+    next_data = page.evaluate("""
+        () => {
+            const el = document.getElementById("__NEXT_DATA__");
+            return el ? el.textContent : null;
+        }
+    """)
 
     browser.close()
 
-# 找 JSON API
-data = []
-for r in responses:
-    try:
-        data.append(r.json())
-    except:
-        pass
-
 import requests
 
-requests.post(WEBHOOK, json={
-    "content": "抓到 JSON 數量：" + str(len(data))
-})
+if not next_data:
+    requests.post(WEBHOOK, json={
+        "content": "❌ 沒抓到 __NEXT_DATA__（頁面不是 Next.js 或已改版）"
+    })
+else:
+    data = json.loads(next_data)
+
+    requests.post(WEBHOOK, json={
+        "content": "✅ 成功抓到 Next.js 資料\n\n" + str(list(data.keys()))
+    })
