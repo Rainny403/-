@@ -1,25 +1,19 @@
 import os
 import requests
-from playwright.sync_api import sync_playwright
 
-WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
+WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
-URL = "https://info.monsterhunter.com/wilds/event-quest/zh-hant/schedule"
+message = """📅 本週限定活動任務
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
+★4　在晚飯之時點火
+原野：天塹沙原
+承接／參加條件：HR 9 以上
+完成條件：狩獵炎尾龍
+發佈開始時間：2026.07.01 08:00
+發佈結束時間：2026.07.08 07:59
+"""
 
-    page.goto(URL, wait_until="networkidle")
-
-    # 等 JS 完全渲染
-    page.wait_for_timeout(5000)
-
-    # 直接抓「可見文字」
-    text = page.inner_text("body")
-
-    browser.close()
-
-requests.post(WEBHOOK, json={
-    "content": "🎯 DOM 抓取結果（前3000字）\n\n" + text[:3000]
-})
+requests.post(
+    WEBHOOK,
+    json={"content": message}
+)
