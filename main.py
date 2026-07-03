@@ -1,38 +1,24 @@
 import os
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
-WEBHOOK = os.environ["DISCORD_WEBHOOK"]
+WEBHOOK = os.environ.get("DISCORD_WEBHOOK")
+
+if not WEBHOOK:
+    raise Exception("DISCORD_WEBHOOK 沒有設定")
 
 URL = "https://info.monsterhunter.com/wilds/event-quest/zh-hant/schedule"
 
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page()
+    page.goto(URL)
 
-resp = requests.get(URL, headers=headers)
-soup = BeautifulSoup(resp.text, "lxml")
+    content = page.content()
+    browser.close()
 
-# 找所有週期區塊（本週 / 下週 / 下下週）
-sections = soup.find_all("section")
+# Discord 測試先送 raw（確認抓得到）
+import requests
 
-if len(sections) < 3:
-    raise Exception("抓不到足夠的週期區塊，網站結構可能改了")
-
-# 👉 只取「下下週」
-target = sections[2]
-
-items = target.find_all("li")
-
-results = []
-
-for item in items:
-    text = item.get_text("\n", strip=True)
-    results.append(text)
-
-message = "📅 下下週限定活動任務\n\n" + "\n\n────────────────\n\n".join(results)
-
-requests.post(
-    WEBHOOK,
-    json={"content": message}
-)
+requests.post(WEBHOOK, json={
+    "content": "成功抓到網頁（下一步才解析）\n\n" + content[:1500]
+})
