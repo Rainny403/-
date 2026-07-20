@@ -41,35 +41,12 @@ for row in rows:
         "start": "",
         "end": ""
     }
-
-    text = overview.get_text("\n", strip=True)
+text = overview.get_text("\n", strip=True)
 
 print("=" * 50)
 print(overview.prettify())
 print("=" * 50)
 break
-
-    for line in text.split("\n"):
-
-        line = line.strip()
-
-        if line.startswith("原野"):
-            quest["field"] = line.replace("原野：", "").strip()
-
-        elif line.startswith("承接／參加條件"):
-            quest["hr"] = line.replace("承接／參加條件：", "").strip()
-
-        elif line.startswith("完成條件"):
-            quest["target"] = line.replace("完成條件：", "").strip()
-
-        elif line.startswith("發佈開始時間"):
-            quest["start"] = line.replace("發佈開始時間：", "").strip()
-
-        elif line.startswith("發佈結束時間"):
-            quest["end"] = line.replace("發佈結束時間：", "").strip()
-
-    quests.append(quest)
-
 print(f"成功解析 {len(quests)} 個活動")
 
 for q in quests:
