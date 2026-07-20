@@ -65,3 +65,6 @@ for row in rows:
     quests.append(quest)
 
 print(f"成功解析 {len(quests)} 個活動")
+
+for q in quests:
+    print(q)
