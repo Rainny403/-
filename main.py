@@ -20,7 +20,9 @@ quests = []
 
 rows = soup.select("tr")
 
-print(f"找到 {len(rows)} 個 tr")for row in rows:
+print(f"找到 {len(rows)} 個 tr")
+
+for row in rows:
 
     level = row.select_one("td.level")
     title = row.select_one(".title span")
