@@ -43,6 +43,10 @@ for row in rows:
     }
 
     text = overview.get_text("\n", strip=True)
+    print("=" * 50)
+print(overview.prettify())
+print("=" * 50)
+break
 
     for line in text.split("\n"):
 
