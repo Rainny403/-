@@ -74,3 +74,41 @@ for row in rows:
         quests.append(quest)
 
 print(f"去除重複後，共 {len(quests)} 個活動")
+
+# ==========================
+# 篩選下下週活動
+# ==========================
+
+today = datetime.now()
+
+# 本週一
+this_monday = today - timedelta(days=today.weekday())
+
+# 下下週一
+target_start = this_monday + timedelta(weeks=2)
+
+# 下下週日
+target_end = target_start + timedelta(days=7)
+
+print("下下週開始：", target_start.strftime("%Y-%m-%d"))
+print("下下週結束：", target_end.strftime("%Y-%m-%d"))
+
+next2_quests = []
+
+for q in quests:
+
+    if not q["start"]:
+        continue
+
+    try:
+        start_time = datetime.strptime(q["start"], "%Y.%m.%d %H:%M")
+    except Exception:
+        continue
+
+    if target_start <= start_time < target_end:
+        next2_quests.append(q)
+
+print(f"下下週共有 {len(next2_quests)} 個活動")
+
+for q in next2_quests:
+    print(q)
