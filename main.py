@@ -97,15 +97,17 @@ next2_quests = []
 
 for q in quests:
 
-    if not q["start"]:
+    if not q["end"]:
         continue
 
     try:
         start_time = datetime.strptime(q["start"], "%Y.%m.%d %H:%M")
+        end_time = datetime.strptime(q["end"], "%Y.%m.%d %H:%M")
     except Exception:
         continue
 
-    if target_start <= start_time < target_end:
+    # 只要下下週期間活動仍然存在
+    if end_time >= target_start and start_time < target_end:
         next2_quests.append(q)
 
 print(f"下下週共有 {len(next2_quests)} 個活動")
