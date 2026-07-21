@@ -1,28 +1,25 @@
 import os
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
-# Discord Webhook
 WEBHOOK = os.environ["DISCORD_WEBHOOK"]
 
-# Cloudflare Worker
 WORKER_URL = "https://mhwilds-discord.toptoonisgood5.workers.dev"
 
-# 取得 HTML
 response = requests.get(WORKER_URL, timeout=30)
 response.raise_for_status()
 
-# 解析 HTML
 soup = BeautifulSoup(response.text, "lxml")
 
 print("✅ HTML 取得成功")
 
-# 找所有活動列
 rows = soup.select("tr")
 
 print(f"找到 {len(rows)} 個 tr")
 
 quests = []
+seen = set()
 
 for row in rows:
 
@@ -43,14 +40,12 @@ for row in rows:
         "end": ""
     }
 
-    # 取得 overview 內容
     lines = [
         x.strip()
         for x in overview.get_text("\n", strip=True).split("\n")
         if x.strip() and x.strip() != ":"
     ]
 
-    # 解析欄位
     for i in range(len(lines) - 1):
 
         if lines[i] == "原野":
@@ -68,10 +63,14 @@ for row in rows:
         elif lines[i] == "發佈結束時間":
             quest["end"] = lines[i + 1]
 
-    quests.append(quest)
+    key = (
+        quest["title"],
+        quest["start"],
+        quest["end"]
+    )
 
-print(f"成功解析 {len(quests)} 個活動")
+    if key not in seen:
+        seen.add(key)
+        quests.append(quest)
 
-# 顯示前 5 筆確認解析是否正確
-for q in quests[:5]:
-    print(q)
+print(f"去除重複後，共 {len(quests)} 個活動")
