@@ -110,6 +110,45 @@ for q in quests:
     if end_time >= target_start and start_time < target_end:
         next2_quests.append(q)
 
+# ==========================
+# 建立 Discord 訊息
+# ==========================
+
+message = "📅 下下週限定活動任務\n\n"
+
+if len(next2_quests) == 0:
+    message += "目前沒有下下週活動任務。"
+
+else:
+
+    # 依開始時間排序
+    next2_quests.sort(key=lambda q: q["start"])
+
+    for q in next2_quests:
+
+        message += (
+            f"{q['level']}　{q['title']}\n"
+            f"原野：{q['field']}\n"
+            f"承接／參加條件：{q['hr']}\n"
+            f"完成條件：{q['target']}\n"
+            f"發佈開始時間：{q['start']}\n"
+            f"發佈結束時間：{q['end']}\n\n"
+        )
+
+print(message)
+
+response = requests.post(
+    WEBHOOK,
+    json={
+        "content": message
+    },
+    timeout=30
+)
+
+print("Discord Status:", response.status_code)
+
+if response.status_code != 204:
+    print(response.text)
 print(f"下下週共有 {len(next2_quests)} 個活動")
 
 for q in next2_quests:
