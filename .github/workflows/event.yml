@@ -1,6 +1,9 @@
 name: Discord Message
 
 on:
+  schedule:
+    - cron: "0 0 * * 3"
+
   workflow_dispatch:
 
 jobs:
@@ -14,7 +17,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install -r requirements.txt
+      - run: pip install requests beautifulsoup4 lxml
 
       - run: python main.py
         env:
